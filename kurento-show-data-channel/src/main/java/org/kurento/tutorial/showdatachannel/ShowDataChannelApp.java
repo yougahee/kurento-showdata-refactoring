@@ -34,31 +34,11 @@ import org.springframework.web.socket.server.standard.ServletServerContainerFact
  * @since 6.1.1
  */
 @SpringBootApplication
-@EnableWebSocket
-public class ShowDataChannelApp implements WebSocketConfigurer {
-
-  static final String DEFAULT_APP_SERVER_URL = "https://localhost:8443";
-
-  @Bean
-  public ShowDataChannelHandler handler() {
-    return new ShowDataChannelHandler();
-  }
+public class ShowDataChannelApp {
 
   @Bean
   public KurentoClient kurentoClient() {
     return KurentoClient.create();
-  }
-
-  @Bean
-  public ServletServerContainerFactoryBean createServletServerContainerFactoryBean() {
-    ServletServerContainerFactoryBean container = new ServletServerContainerFactoryBean();
-    container.setMaxTextMessageBufferSize(32768);
-    return container;
-  }
-
-  @Override
-  public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-    registry.addHandler(handler(), "/showdatachannel");
   }
 
   public static void main(String[] args) throws Exception {

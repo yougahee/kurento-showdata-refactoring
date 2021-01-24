@@ -20,6 +20,7 @@ package org.kurento.tutorial.one2manycall;
 import java.io.IOException;
 
 import org.kurento.client.IceCandidate;
+import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +41,7 @@ public class UserSession {
 
   private final WebSocketSession session;
   private WebRtcEndpoint webRtcEndpoint;
+  private MediaPipeline mediaPipeline;
 
   public UserSession(WebSocketSession session) {
     this.session = session;
@@ -54,12 +56,22 @@ public class UserSession {
     session.sendMessage(new TextMessage(message.toString()));
   }
 
+  // ## mediaPipeline추가
+  public MediaPipeline getMediaPipeline() {
+    return mediaPipeline;
+  }
+
   public WebRtcEndpoint getWebRtcEndpoint() {
     return webRtcEndpoint;
   }
 
   public void setWebRtcEndpoint(WebRtcEndpoint webRtcEndpoint) {
     this.webRtcEndpoint = webRtcEndpoint;
+  }
+
+
+  public void setMediaPipeline(MediaPipeline mediaPipeline) {
+    this.mediaPipeline = mediaPipeline;
   }
 
   public void addCandidate(IceCandidate candidate) {

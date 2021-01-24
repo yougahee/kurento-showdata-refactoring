@@ -42,7 +42,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
-/**
+/*
+ *
  * Show Data Channel handler (application and media logic).
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
@@ -103,6 +104,7 @@ public class SendDataChannelHandler extends TextWebSocketHandler {
       WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(pipeline).useDataChannels()
           .build();
       user.setWebRtcEndpoint(webRtcEndpoint);
+      //##uri 는 뭘 넣는거지???
       PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
           "http://files.openvidu.io/video/filter/barcodes.webm").build();
       user.setPlayer(player);

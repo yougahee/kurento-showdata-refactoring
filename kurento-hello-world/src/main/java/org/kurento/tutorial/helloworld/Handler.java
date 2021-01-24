@@ -60,8 +60,7 @@ public class Handler extends TextWebSocketHandler
   private static final Logger log = LoggerFactory.getLogger(Handler.class);
   private static final Gson gson = new GsonBuilder().create();
 
-  private final ConcurrentHashMap<String, UserSession> users =
-      new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<String, UserSession> users = new ConcurrentHashMap<>();
 
   @Autowired
   private KurentoClient kurento;

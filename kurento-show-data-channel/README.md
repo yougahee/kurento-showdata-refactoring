@@ -20,6 +20,45 @@ video.
 This tutorial requires media server module kms-datachannelexample. You can
 install this module with command `sudo apt-get install kms-datachannelexample`.
 
+
+Kurneto-show-data-channel Refactoring 
+=====================================
+by gahuiyu
+
+
+FLOW
+----
+
+1. Web에 접속하자마자 클라이언트, 시그널링 서버 웹소켓 연결 
+2. WebSocket이 연결되고 웹 페이지에서 start 버튼을 누른다.   
+   2-1. start 버튼을 누르면 js파일의 start()로 들어가고 WebRtcPeer를 연결해달라는 {"id": 'start', "sdpOffer" : 'sdpOffer'} json을 서버에게 send 한다. 
+3. 서버는 handlerTextMessage에서 jsonMessage를 받았다.  
+    3-1. jsonMessage의 id를 통해 start 임을 알 수 있고 sdpOffer을 통해 어떤 방식으로 WebRTC를 연결할지(어떻게 미디어를 보낼지 sdp 프로토콜)확인하고 Answer을 보내준다. 
+    3-3. jsonMessage의 sdpOffer을 사용하여 WebRtcEndpoint를 설정해준다. (어떤 방식으로 미디어를 전송할 것인지)
+4. 클라이언트는 startResponse를 받았고, ICE Candidate를 찾아서 연결을 시켜준다. 
+5. 연결할 수 있는 ICE Candidate를 찾으면 pipeLine에 연결이 되고 dataChannel 도 열린다. 
+6. 
+
+
+파이프라인이 삭제되면?
+- 연결되어 있는 모든 피어들이 삭제되나?
+- 
+- 자동으로는 안되고 Redis에 집어넣어져 있으면 그 정보가 없어짐
+
+
+
+
+TEST IMAGE
+==========
+
+
+
+
+
+
+
+
+
 Running this tutorial
 ---------------------
 

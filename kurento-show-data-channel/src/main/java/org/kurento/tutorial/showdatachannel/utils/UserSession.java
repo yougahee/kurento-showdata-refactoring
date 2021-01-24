@@ -15,11 +15,12 @@
  *
  */
 
-package org.kurento.tutorial.showdatachannel;
+package org.kurento.tutorial.showdatachannel.utils;
 
 import org.kurento.client.IceCandidate;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
+import org.springframework.stereotype.Component;
 
 /**
  * User session.
@@ -27,6 +28,7 @@ import org.kurento.client.WebRtcEndpoint;
  * @author David Fernandez (d.fernandezlop@gmail.com)
  * @since 6.1.1
  */
+@Component
 public class UserSession {
   private WebRtcEndpoint webRtcEndpoint;
   private MediaPipeline mediaPipeline;
