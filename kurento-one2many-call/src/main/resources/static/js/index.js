@@ -15,7 +15,9 @@
  *
  */
 
-var ws = new WebSocket('wss://' + location.host + '/call');
+var signalling_ws = new WebSocket('wss://' + location.host + '/call');
+var chatting_ws = new WebSocket('ws://localhost:8002/chatting');
+
 var video;
 var webRtcPeer;
 
@@ -37,10 +39,11 @@ window.onload = function () {
 }
 
 window.onbeforeunload = function () {
-    ws.close();
+    signalling_ws.close();
+    chatting_ws.close();
 }
 
-ws.onmessage = function (message) {
+signalling_ws.onmessage = function (message) {
     var parsedMessage = JSON.parse(message.data);
     console.info('Received message: ' + message.data);
 
@@ -339,7 +342,7 @@ function enableButton(id, functionName) {
 function sendMessage(message) {
     var jsonMessage = JSON.stringify(message);
     console.log('Sending message: ' + jsonMessage);
-    ws.send(jsonMessage);
+    signalling_ws.send(jsonMessage);
 }
 
 function showSpinner() {
