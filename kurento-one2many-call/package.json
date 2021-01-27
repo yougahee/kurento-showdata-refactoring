@@ -1,0 +1,11 @@
+{
+  "name": "kurento-one2many-call",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {
+    "axios": "^0.21.1"
+
+  }
+}

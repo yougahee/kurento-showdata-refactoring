@@ -284,7 +284,7 @@ public class CallHandler extends TextWebSocketHandler {
 
 			String sdpOffer = jsonMessage.getAsJsonPrimitive("sdpOffer").getAsString();
 			String sdpAnswer = nextWebRtc.processOffer(sdpOffer);
-			log.info("viewer SDP offer : " + sdpOffer);
+			//log.info("viewer SDP offer : " + sdpOffer);
 
 			JsonObject response = new JsonObject();
 			response.addProperty("id", "viewerResponse");

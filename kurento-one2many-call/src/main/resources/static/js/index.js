@@ -15,8 +15,9 @@
  *
  */
 
+
 var signalling_ws = new WebSocket('wss://' + location.host + '/call');
-var chatting_ws = new WebSocket('ws://localhost:8002/chatting');
+var chatting_ws;
 
 var video;
 var webRtcPeer;
@@ -24,7 +25,6 @@ var webRtcPeer;
 var dataChannelSend;
 var dataChannelReceive;
 var sendButton;
-
 
 window.onload = function () {
     console = new Console();
@@ -63,6 +63,9 @@ signalling_ws.onmessage = function (message) {
         case 'stopCommunication':
             dispose();
             break;
+        /*case 'chatting_connected':
+            chattingResponse(parsedMessage);
+            break;*/
         case 'error':
             onError("Error message from server: " + parsedMessage.message);
             break;
@@ -70,6 +73,8 @@ signalling_ws.onmessage = function (message) {
             console.error('Unrecognized message', parsedMessage);
     }
 };
+
+
 
 function presenterResponse(message) {
     if (message.response != 'accepted') {
@@ -99,6 +104,24 @@ function viewerResponse(message) {
         });
     }
 }
+/*
+
+function chattingResponse(message) {
+    if (message.response != 'succeess') {
+        var errorMsg = message.message ? message.message : 'Unknow error';
+        console.info('Call not accepted for the following reason: ' + errorMsg);
+        dispose();
+    } else {
+        console.log("chatting Response");
+        //roomIdx 보내주기
+        var message = {
+            id: 'roomIdx',
+            roomIdx: 1
+        };
+        sendMessageToChatting(message);
+    }
+}
+*/
 
 var chanId = 0;
 
@@ -121,6 +144,8 @@ const configuration = {
 
 function presenter() {
     console.log("Starting Presenter ...");
+    console.log("chatting websocket starting ....");
+    chatting_ws = new WebSocket('ws://localhost:8002/chatting');
 
     if (!webRtcPeer) {
         showSpinner(video);
@@ -128,9 +153,81 @@ function presenter() {
         sendButton.addEventListener("click", function () {
             var data = dataChannelSend.value;
             console.log("Send button pressed. Sending data " + data);
-            webRtcPeer.send(data);
+
+            // ## HTTP 통신 ( API Gateway로 가야 함 )
+            onButtonClicked();
+            console.log("[Presenter] message send to chatting server : " + data);
+            function onButtonClicked() {
+                axios({
+                    method: "POST",
+                    url: "http://localhost:8002/send/message",
+                    data: {
+                        roomIdx: 1,
+                        textMessage: data
+                    }
+                })
+                    .then((res) => {
+                        console.log(res);
+                        if(res.data.code === 200) {
+                            dataChannelReceive.value += data + "\n";
+                        } else {
+                            console.log("error : data not send");
+                        }
+                    })
+                    .catch({
+                        function (error) {
+                            console.log("error : " + error);
+                        }
+                    })
+            }
+
+            //webRtcPeer.send(data);
             dataChannelSend.value = "";
         });
+
+        chatting_ws.onopen = function (e) {
+            console.log("chatting_ws open!!!");
+
+            // ## 이 부분은 chatting Server
+            //roomIdx 보내주기
+            var message = {
+                id: 'roomIdx',
+                roomIdx: 1
+            };
+
+            function sendMessageToChatting(message) {
+                var jsonMessage = JSON.stringify(message);
+                console.log('Sending message: ' + jsonMessage);
+                chatting_ws.send(jsonMessage);
+            }
+
+            sendMessageToChatting(message);
+        };
+
+        chatting_ws.onmessage = function (message) {
+            var parsedMessage = JSON.parse(message.data);
+            console.info('Chatting Received message: ' + message.data);
+
+            switch (parsedMessage.id) {
+                case 'sendChatting':
+                    console.log("chatting ws message : " + parsedMessage);
+                    console.log("chatting Detail Message : " + parsedMessage.from + " " + parsedMessage.message);
+
+                    var data = parsedMessage.from + " : " + parsedMessage.message;
+                    dataChannelReceive.value += data + "\n";
+                    webRtcPeer.send(data);
+                    break;
+                case 'error':
+                    onError("Error message from server: " + parsedMessage.message);
+                    break;
+                default:
+                    console.error('Unrecognized message', parsedMessage);
+            }
+        };
+
+        chatting_ws.onclose = function (e) {
+            console.log("closing chatting ws : " );
+        };
 
         function onOpen(event) {
             console.log("open");
@@ -199,7 +296,7 @@ function onOfferPresenter(error, offerSdp) {
         id: 'presenter',
         sdpOffer: offerSdp
     };
-    sendMessage(message);
+    sendMessageToSignaling(message);
 }
 
 function viewer() {
@@ -212,7 +309,36 @@ function viewer() {
         sendButton.addEventListener("click", function () {
             var data = dataChannelSend.value;
             console.log("Send button pressed. Sending data " + data);
-            webRtcPeer.send(data);
+
+            onButtonClicked();
+
+            console.log("[Viewer] message send to chatting server : " + data);
+
+            function onButtonClicked() {
+                axios({
+                    method: "POST",
+                    url: "http://localhost:8002/send/message",
+                    data: {
+                        roomIdx: 1,
+                        textMessage: data
+                    }
+                })
+                    .then((res) => {
+                        console.log(res);
+                        if(res.data.code === 200) {
+                            console.log("success : data send Success!!!")
+                        } else {
+                            console.log("error : data not send");
+                        }
+                    })
+                    .catch({
+                        function (error) {
+                            console.log("error : " + error);
+                        }
+                    })
+            }
+
+            //webRtcPeer.send(data);
             dataChannelSend.value = "";
         });
 
@@ -280,7 +406,7 @@ function onOfferViewer(error, offerSdp) {
         id: 'viewer',
         sdpOffer: offerSdp
     }
-    sendMessage(message);
+    sendMessageToSignaling(message);
 }
 
 function onIceCandidate(candidate) {
@@ -290,14 +416,14 @@ function onIceCandidate(candidate) {
         id: 'onIceCandidate',
         candidate: candidate
     };
-    sendMessage(message);
+    sendMessageToSignaling(message);
 }
 
 function stop() {
     var message = {
         id: 'stop'
     }
-    sendMessage(message);
+    sendMessageToSignaling(message);
     dispose();
 }
 
@@ -339,11 +465,13 @@ function enableButton(id, functionName) {
     $(id).attr('onclick', functionName);
 }
 
-function sendMessage(message) {
+function sendMessageToSignaling(message) {
     var jsonMessage = JSON.stringify(message);
     console.log('Sending message: ' + jsonMessage);
     signalling_ws.send(jsonMessage);
 }
+
+
 
 function showSpinner() {
     for (var i = 0; i < arguments.length; i++) {
