@@ -163,6 +163,7 @@ function presenter() {
                     url: "http://localhost:8002/send/message",
                     data: {
                         roomIdx: 1,
+                        userType: "presenter",
                         textMessage: data
                     }
                 })
